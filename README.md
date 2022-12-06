@@ -40,5 +40,14 @@ $ yarn start:dev
 ## Create postgres DB
 
 ```
-docker-compose  up -d
+docker-compose up -d
+
+o
+
+yarn db-up
+
 ```
+
+## Environment variables
+
+Copy .env.template and rename and completa de fields

@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   db:
-    container_name: anylist-postgres
+    container_name: anylistDB
     image: postgres:14.3
     environment:
       POSTGRES_USER: ${DB_USERNAME}
