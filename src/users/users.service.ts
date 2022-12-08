@@ -10,6 +10,7 @@ import { SignupInput } from '../auth/dto/inputs/signup.input';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
@@ -36,8 +37,25 @@ export class UsersService {
     return [];
   }
 
+  async findOneByEmail(email: string): Promise<User> {
+    try {
+      return await this.userRepository.findOneByOrFail({ email });
+    } catch (error) {
+      this.handleDBExceptions({
+        code: 'errr-001',
+        detail: `${email} not found`,
+      });
+    }
+  }
+
   async findOne(id: string): Promise<User> {
-    throw new Error('not implemented');
+    try {
+      const user = await this.userRepository.findOneBy({ id });
+      if (!user) throw new NotFoundException(`Not exist user with id: ${id}`);
+      return user;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   // update(id: number, updateUserInput: UpdateUserInput) {
@@ -51,6 +69,9 @@ export class UsersService {
   private handleDBExceptions(error: any): never {
     this.logger.error(error);
     if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
+    if (error.code === 'errr-001') {
       throw new BadRequestException(error.detail);
     }
     throw new InternalServerErrorException('Check server logs');
