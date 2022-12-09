@@ -8,7 +8,7 @@ import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { ValidRoles } from './enums/valid-roles.enum';
 
-@Resolver()
+@Resolver(() => AuthResolver)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
