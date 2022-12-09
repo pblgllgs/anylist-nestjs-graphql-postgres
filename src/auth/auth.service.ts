@@ -9,6 +9,7 @@ import { SignupInput, LoginInput } from './dto/inputs';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedException } from '@nestjs/common';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -42,13 +43,20 @@ export class AuthService {
     };
   }
 
-  // async revalidateToken(token: string): Promise<string> {
-  //   try {
-  //     const payload = this.jwtService.decode(token);
-  //     const user = await this.usersService.findOne(payload['id']);
-  //     return this.jwtService.sign({ id: user.id }, { expiresIn: 60 * 60 * 24 });
-  //   } catch (error) {
-  //     throw new UnauthorizedException(`Can't revalidate token, see logs`);
-  //   }
-  // }
+  async validateUser(id: string): Promise<User> {
+    const user = await this.usersService.findOneById(id);
+    if (!user.isActive)
+      throw new UnauthorizedException(
+        `User is inactive, talk with the administrator`,
+      );
+    delete user.password;
+    return user;
+  }
+
+  revalidateToken(user: User): AuthResponse {
+    return {
+      user,
+      token: this.getJwtToken(user.id),
+    };
+  }
 }
