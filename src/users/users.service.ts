@@ -10,8 +10,8 @@ import { SignupInput } from '../auth/dto/inputs/signup.input';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { NotFoundException } from '@nestjs/common';
 import { ValidRoles } from '../auth/enums/valid-roles.enum';
+import { UpdateUserInput } from './dto/inputs/update-user.input';
 
 @Injectable()
 export class UsersService {
@@ -63,12 +63,56 @@ export class UsersService {
     }
   }
 
-  // update(id: number, updateUserInput: UpdateUserInput) {
-  //   return `This action updates a #${id} user`;
-  // }
+  async update(
+    id: string,
+    updateUserInput: UpdateUserInput,
+    adminUser: User,
+  ): Promise<User> {
+    try {
+      const user = await this.userRepository.preload({ id });
+      if (updateUserInput.email !== user.email) {
+        const isUsed = await this.isUsedEmail(updateUserInput.email);
+        if (isUsed) {
+          throw new BadRequestException(
+            `User ${updateUserInput.email} already exists`,
+          );
+        }
+      }
+      const userUpdated = {
+        ...user,
+        ...updateUserInput,
+      };
+      userUpdated.lastUpdateBy = adminUser;
+      userUpdated.password = bcrypt.hashSync(updateUserInput.password, 10);
+      return await this.userRepository.save(userUpdated);
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
 
-  block(id: string): Promise<User> {
-    throw new Error('not implemented');
+  async block(id: string, adminUser: User): Promise<User> {
+    try {
+      const user = await this.findOneById(id);
+      const updatedUser = this.userRepository.create({
+        ...user,
+        isActive: !user.isActive,
+        lastUpdateBy: adminUser,
+      });
+      await this.userRepository.update(user.id, updatedUser);
+      return updatedUser;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+  private async isUsedEmail(email: string): Promise<boolean> {
+    const validEmail = await this.userRepository.find({
+      where: {
+        email: email,
+      },
+    });
+    if (validEmail.length === 0) return false;
+    return true;
   }
 
   private handleDBExceptions(error: any): never {
