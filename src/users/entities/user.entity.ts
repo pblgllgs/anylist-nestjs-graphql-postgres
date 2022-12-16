@@ -1,9 +1,11 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Item } from '../../items/entities/item.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -45,5 +47,7 @@ export class User {
   @JoinColumn({ name: 'lastUpdateBy' })
   lastUpdateBy?: User;
 
-  //TODO: relaciones y mas
+  @Field(() => [Item])
+  @OneToMany(() => Item, (item) => item.user)
+  items: Item[];
 }

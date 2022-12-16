@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateItemInput, UpdateItemInput } from './dto/inputs';
 import { Item } from './entities/item.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ItemsService {
@@ -11,25 +12,36 @@ export class ItemsService {
     private readonly itemsRepository: Repository<Item>,
   ) {}
 
-  async create(createItemInput: CreateItemInput): Promise<Item> {
+  async create(createItemInput: CreateItemInput, user: User): Promise<Item> {
     try {
-      const newItem = this.itemsRepository.create(createItemInput);
+      const newItem = this.itemsRepository.create({ ...createItemInput, user });
       return await this.itemsRepository.save(newItem);
     } catch (error) {
       console.log(error);
     }
   }
 
-  async findAll(): Promise<Item[]> {
+  async findAll(user: User): Promise<Item[]> {
     //TODO: filtrar, paginar, por usuario
-    return this.itemsRepository.find();
+    const items = await this.itemsRepository.find({
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
+    });
+    return items;
   }
 
-  async findOne(id: string): Promise<Item> {
+  async findOne(id: string, user: User): Promise<Item> {
     const item = await this.itemsRepository.findOneBy({
       id,
+      user: {
+        id: user.id,
+      },
     });
     if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
+    // item.user = user;
     return item;
   }
 
@@ -47,9 +59,9 @@ export class ItemsService {
     // return updateItem;
   }
 
-  async remove(id: string): Promise<Item> {
+  async remove(id: string, user: User): Promise<Item> {
     //TODO: soft delete, integridad referencial
-    const item = await this.findOne(id);
+    const item = await this.findOne(id, user);
     if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
     await this.itemsRepository.remove(item);
     return { ...item, id };

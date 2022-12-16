@@ -16,10 +16,10 @@ export class CreateItemInput {
   @MinLength(4)
   name: string;
 
-  @Field(() => Float)
-  @IsPositive()
-  @IsNumber()
-  quantity: number;
+  // @Field(() => Float)
+  // @IsPositive()
+  // @IsNumber()
+  // quantity: number;
 
   @Field(() => String, { nullable: true })
   @IsString()
