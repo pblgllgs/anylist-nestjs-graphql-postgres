@@ -41,22 +41,19 @@ export class ItemsService {
       },
     });
     if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
-    // item.user = user;
     return item;
   }
 
-  async update(id: string, updateItemInput: UpdateItemInput): Promise<Item> {
+  async update(
+    id: string,
+    updateItemInput: UpdateItemInput,
+    user: User,
+  ): Promise<Item> {
+    await this.findOne(id, user);
+    //? const item = await this.itemsRepository.preload({...updateItemInput,user});
     const item = await this.itemsRepository.preload(updateItemInput);
     if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
     return this.itemsRepository.save(item);
-    // const item = await this.findOne(id);
-    // if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
-    // const updateItem = {
-    //   ...item,
-    //   ...updateItemInput,
-    // };
-    // await this.itemsRepository.update(id, updateItem);
-    // return updateItem;
   }
 
   async remove(id: string, user: User): Promise<Item> {
@@ -65,5 +62,15 @@ export class ItemsService {
     if (!item) throw new NotFoundException(`No se encontró id: ${id}`);
     await this.itemsRepository.remove(item);
     return { ...item, id };
+  }
+
+  async itemCountByUser(user: User): Promise<number> {
+    return await this.itemsRepository.count({
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
+    });
   }
 }
