@@ -47,7 +47,7 @@ export class User {
   @JoinColumn({ name: 'lastUpdateBy' })
   lastUpdateBy?: User;
 
-  @Field(() => [Item])
+  // @Field(() => [Item])
   @OneToMany(() => Item, (item) => item.user, { lazy: true })
   items: Item[];
 }
