@@ -2,10 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type ListItem {
+  id: ID!
+  quantity: Float!
+  completed: Boolean!
+  list: List!
+  item: Item!
+}
+
 type List {
   id: ID!
   name: String!
   user: User!
+  listItem: [ListItem!]!
+  items(limit: Int = 5, offset: Int = 0, search: String): [ListItem!]!
+  totalItems: Float!
 }
 
 type User {
@@ -27,6 +38,7 @@ type Item {
   name: String!
   quantityUnits: String
   user: User!
+  listItem: [ListItem!]!
 }
 
 type AuthResponse {
@@ -62,6 +74,7 @@ type Mutation {
   createList(createListInput: CreateListInput!): List!
   updateList(updateListInput: UpdateListInput!): List!
   removeList(id: ID!): List!
+  createListItem(createListItemInput: CreateListItemInput!): ListItem!
   executeSeed: Boolean!
 }
 
@@ -103,4 +116,11 @@ input CreateListInput {
 input UpdateListInput {
   name: String
   id: ID!
+}
+
+input CreateListItemInput {
+  completed: Boolean = false
+  quantity: Float = 0
+  listId: ID!
+  itemId: ID!
 }
