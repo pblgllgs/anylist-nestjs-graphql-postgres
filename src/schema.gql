@@ -54,6 +54,7 @@ type Query {
   item(id: ID!): Item!
   lists(limit: Int = 5, offset: Int = 0, search: String): [List!]!
   list(id: ID!): List!
+  listItem(id: String!): ListItem!
 }
 
 """roles permitidos"""
@@ -75,6 +76,7 @@ type Mutation {
   updateList(updateListInput: UpdateListInput!): List!
   removeList(id: ID!): List!
   createListItem(createListItemInput: CreateListItemInput!): ListItem!
+  updateListItem(updateListItemInput: UpdateListItemInput!): ListItem!
   executeSeed: Boolean!
 }
 
@@ -123,4 +125,12 @@ input CreateListItemInput {
   quantity: Float = 0
   listId: ID!
   itemId: ID!
+}
+
+input UpdateListItemInput {
+  completed: Boolean = false
+  quantity: Float = 0
+  listId: ID
+  itemId: ID
+  id: ID!
 }
